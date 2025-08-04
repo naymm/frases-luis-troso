@@ -33,6 +33,21 @@ function App() {
   const loadThoughts = async () => {
     try {
       setLoadingThoughts(true);
+      
+      // Verificar se o Supabase está configurado
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        console.error('Supabase não configurado - usando dados de exemplo');
+        // Dados de exemplo para demonstração
+        setThoughts([
+          {
+            id: 1,
+            frase: "Este é um exemplo de pensamento. Configure as variáveis de ambiente do Supabase para usar dados reais.",
+            created_at: new Date().toISOString()
+          }
+        ]);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('frases')
         .select('*')
@@ -58,6 +73,24 @@ function App() {
 
     try {
       setLoading(true);
+      
+      // Verificar se o Supabase está configurado
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        console.error('Supabase não configurado - simulando salvamento');
+        // Simular salvamento para demonstração
+        const mockData = {
+          id: Date.now(),
+          frase: currentThought.trim(),
+          created_at: new Date().toISOString()
+        };
+        
+        setThoughts(prev => [mockData, ...prev]);
+        setCurrentThought('');
+        setSavedMessage(true);
+        setTimeout(() => setSavedMessage(false), 2000);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('frases')
         .insert([
@@ -131,6 +164,13 @@ function App() {
   // Deletar pensamento do banco de dados
   const deleteThought = async (id: number) => {
     try {
+      // Verificar se o Supabase está configurado
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        console.error('Supabase não configurado - simulando exclusão');
+        setThoughts(prev => prev.filter(thought => thought.id !== id));
+        return;
+      }
+      
       const { error } = await supabase
         .from('frases')
         .delete()
@@ -161,6 +201,15 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
+      {/* Aviso de configuração */}
+      {(!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) && (
+        <div className="bg-yellow-100 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-400 px-4 py-3 text-center">
+          <p className="text-sm">
+            ⚠️ Supabase não configurado. Configure as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no Vercel.
+          </p>
+        </div>
+      )}
+      
       {/* Header */}
       <header className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10 transition-colors duration-300">
         <div className="max-w-2xl mx-auto px-4 py-4">
