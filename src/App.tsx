@@ -6,6 +6,7 @@ import { useTheme } from './lib/theme';
 interface Thought {
   id: number;
   frase: string;
+  total_caracteres?: number;
   created_at: string;
 }
 
@@ -91,12 +92,16 @@ function App() {
         return;
       }
       
+      // Calcular total de caracteres
+      const totalCaracteres = currentThought.trim().length;
+      
       const { data, error } = await supabase
         .from('frases')
         .insert([
           {
             frase: currentThought.trim(),
-            estado: 'ativo'
+            estado: 'ativo',
+            total_caracteres: totalCaracteres
           }
         ])
         .select()
@@ -113,6 +118,7 @@ function App() {
         const webhookUrl = '/api/webhook/2m53qub077839bgy8g6iboa7v64xhp2g';
         const webhookData = {
           frase: currentThought.trim(),
+          total_caracteres: totalCaracteres,
           timestamp: new Date().toISOString(),
           id: data.id
         };
@@ -349,6 +355,13 @@ function App() {
                     </button>
                   </div>
                   <p className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{thought.frase}</p>
+                  {thought.total_caracteres && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        Total de caracteres: {thought.total_caracteres}
+                      </span>
+                    </div>
+                  )}
                 </div>
               ))
             )}
